@@ -1,0 +1,94 @@
+const express = require("express");
+const app = express();
+require('dotenv/config');
+const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const mongoose = require('mongoose');
+
+const {Order} = require('./models/order');
+const {Category} = require('./models/category');
+const {Product} = require('./models/product');
+const {User} = require('./models/user');
+
+const api = process.env.API_URL;
+const cns = process.env.CONNECTION_STRING;
+
+//middleware
+app.use(bodyParser.json());
+app.use(morgan('tiny'));
+
+// get
+app.get('/',(req,res) => {
+    res.send(`hello zakwan ${api}`);
+})
+
+//GET FOR ORDERS
+app.get(`${api}/orders`, async (req,res) => {
+    const orderList = await Order.find().sort('name').limit(3);
+    if(orderList.length==0) {
+        res.status(500).json({status: false, message : "No data found", "errCode": "0001"});
+        return;
+    } 
+    res.send(orderList);
+});
+
+//GET FOR CATEGORY
+app.get(`${api}/categories`, async (req,res) => {
+    const categoryList = await Category.find().sort('name').limit(3);
+    if(categoryList.length==0) {
+        res.status(500).json({status: false, message : "No data found", "errCode": "0001"});
+        return;
+    } 
+    res.send(categoryList);
+});
+
+//GET FOR PRODUCTS
+app.get(`${api}/products`, async (req,res) => {
+    const productList = await Product.find().sort('name').limit(3);
+    if(productList.length==0) {
+        res.status(500).json({status: false, message : "No data found", "errCode": "0001"});
+        return;
+    } 
+    res.send(productList);
+});
+
+
+
+//POST FOR CATEGORY
+app.post(`${api}/categories`,(req,res) => {
+    const category = req.body;
+    res.send(category);
+})
+
+//POST FOR PRODUCTS
+app.post(`${api}/products`,(req,res) => {
+    const product = req.body;
+    res.send(product);
+})
+
+//POST FOR USERS
+app.post(`${api}/users`,(req,res) => {
+    const user = req.body;
+    res.send(user);
+})
+
+const userRoutes = require('./routes/users');
+app.use('${api}/users,')
+
+//database connection
+mongoose.connect(cns, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    dbName: 'ecommerce'
+
+}).then( () => {
+    console.log("Database connection is REady .."); 
+}).catch((err) => {
+    console.log(`Error: ${err}`);
+});
+
+
+//server
+app.listen(3000, ()=> {
+    console.log("server is running on http:localhost:3000");
+});
